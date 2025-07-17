@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReservationService } from '../reservation/reservation.service';
+import { Reservation } from '../models/reservation';
+import { Router, ActivatedRoute } from '@angular/router'; 
 
 @Component({
   selector: 'app-reservation-form',
@@ -12,7 +15,11 @@ export class ReservationFormComponent implements OnInit {
 
   // Dependency injection in Angular
   // Learn more about this
-  constructor(private formBuilder: FormBuilder) {
+  constructor(
+    private formBuilder: FormBuilder,
+    private reservationService: ReservationService,
+    private router: Router,
+    private activatedRoute: ActivatedRoute) {
     
   }
 
@@ -28,12 +35,27 @@ export class ReservationFormComponent implements OnInit {
       guestEmail: ['', [Validators.required, Validators.email]],
       roomNumber: ['', Validators.required]
     })
-    throw new Error('Method not implemented.');
+    
+    let id = this.activatedRoute.snapshot.paramMap.get('id');
+
+    if(id) {
+      let reservation = this.reservationService.getReservation(id)
+
+      if(reservation){
+        this.reservationForm.patchValue(reservation);
+      }
+
+    }
   }
 
   onSubmit() {
     if(this.reservationForm.valid) {
-      console.log("Valid");
+
+      let reservation: Reservation = this.reservationForm.value;
+      this.reservationService.addReservation(reservation);
+
+      // When the user submits the reservation it will re-direct him to the list URL
+      this.router.navigate(['/list']);
     }
 
   }
